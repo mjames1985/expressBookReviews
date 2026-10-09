@@ -108,23 +108,37 @@ public_users.get('/booksdata/author/:author', function (req, res) {
 
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  //Write your code here
-  const title = req.params.title;
-  const keys = Object.keys(books);
-  let results = [];
-
-  keys.forEach((isbn) => {
-    if (books[isbn].title === title) {
-      results.push(books[isbn]);
+public_users.get('/title/:title', async function (req, res) {
+    const title = req.params.title;
+  
+    try {
+      // Simulate async fetch with Axios (calling local helper route)
+      const response = await axios.get(`http://localhost:5000/booksdata/title/${title}`);
+      const results = response.data;
+  
+      if (results.length > 0) {
+        res.send(JSON.stringify(results, null, 2));
+      } else {
+        res.status(404).json({ message: "No books found with this title" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching books by title", error: error.message });
     }
-  });
+});
+  
+  // Helper route to serve books by Title (used by Axios above)
+public_users.get('/booksdata/title/:title', function (req, res) {
+    const title = req.params.title;
+    const keys = Object.keys(books);
+    let results = [];
 
-  if (results.length > 0) {
-    res.send(JSON.stringify(results, null, 2));
-  } else {
-    res.status(404).json({ message: "No books found with this title" });
-  }
+    keys.forEach((isbn) => {
+        if (books[isbn].title === title) {
+        results.push(books[isbn]);
+        }
+    });
+
+    res.json(results);
 });
 
 //  Get book review
